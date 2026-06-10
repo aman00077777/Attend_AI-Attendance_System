@@ -1,2 +1,5 @@
 2026-06-10 14:03:21.260 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
 2026-06-10 14:29:15.571 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
+2026-06-10 14:38:44.850 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
+2026-06-10 14:38:44.851 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
+2026-06-10 14:39:14.108 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
