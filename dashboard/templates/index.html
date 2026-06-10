@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- ── Stat Cards ─────────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-card--purple">
+      <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+      <div class="stat-body">
+        <div class="stat-value" id="totalStudents">{{ total_students }}</div>
+        <div class="stat-label">Total Students</div>
+      </div>
+      <div class="stat-bg-icon"><i class="bi bi-people"></i></div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-card--teal">
+      <div class="stat-icon"><i class="bi bi-check2-circle"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ today_count }}</div>
+        <div class="stat-label">Today's Attendance</div>
+      </div>
+      <div class="stat-bg-icon"><i class="bi bi-check-circle"></i></div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-card--orange">
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ low_attendance | length }}</div>
+        <div class="stat-label">Low Attendance (&lt;75%)</div>
+      </div>
+      <div class="stat-bg-icon"><i class="bi bi-exclamation-triangle"></i></div>
+    </div>
+  </div>
+
+  <div class="col-12 col-sm-6 col-xl-3">
+    <div class="stat-card stat-card--blue">
+      <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+      <div class="stat-body">
+        <div class="stat-value">{{ today }}</div>
+        <div class="stat-label">Today's Date</div>
+      </div>
+      <div class="stat-bg-icon"><i class="bi bi-calendar3"></i></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Charts + Alerts Row ────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+  <!-- 30-Day Trend Chart -->
+  <div class="col-12 col-xl-8">
+    <div class="glass-card h-100">
+      <div class="card-header-custom">
+        <div class="card-header-left">
+          <i class="bi bi-graph-up-arrow me-2 text-purple"></i>
+          <h5 class="card-title-custom mb-0">30-Day Attendance Trend</h5>
+        </div>
+      </div>
+      <div class="card-body-custom">
+        <canvas id="trendChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Low Attendance Alert Panel -->
+  <div class="col-12 col-xl-4">
+    <div class="glass-card h-100">
+      <div class="card-header-custom">
+        <div class="card-header-left">
+          <i class="bi bi-exclamation-triangle-fill me-2 text-orange"></i>
+          <h5 class="card-title-custom mb-0">Low Attendance Alerts</h5>
+        </div>
+      </div>
+      <div class="card-body-custom overflow-auto" style="max-height:300px">
+        {% if low_attendance %}
+          {% for s in low_attendance %}
+            <div class="alert-student-card">
+              <div class="alert-student-info">
+                <div class="alert-student-name">{{ s.get('name', '—') if s is mapping else s.name }}</div>
+                <div class="alert-student-roll">{{ s.get('roll_number', '—') if s is mapping else s.roll_number }} · {{ s.get('branch', '—') if s is mapping else s.branch }}</div>
+              </div>
+              {% set pct = ((s.get('attendance_percent') or s.get('percent') or 0) | float) %}
+              {% if pct < 50 %}
+                {% set badge_cls = 'alert-student-badge badge-danger' %}
+              {% elif pct < 65 %}
+                {% set badge_cls = 'alert-student-badge badge-warning' %}
+              {% else %}
+                {% set badge_cls = 'alert-student-badge badge-caution' %}
+              {% endif %}
+              <div class="{{ badge_cls }}">
+                {{ pct | round(1) }}%
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty-state">
+            <i class="bi bi-emoji-smile text-success" style="font-size:2rem"></i>
+            <p class="mt-2 text-muted">All students have good attendance!</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Today's Attendance Table ───────────────────────────────────────────── -->
+<div class="row g-4">
+  <div class="col-12">
+    <div class="glass-card">
+      <div class="card-header-custom">
+        <div class="card-header-left">
+          <i class="bi bi-clock-history me-2 text-teal"></i>
+          <h5 class="card-title-custom mb-0">Today's Attendance</h5>
+        </div>
+        <div>
+          <a href="{{ url_for('attendance.attendance_page') }}" class="btn btn-sm btn-primary-custom">
+            <i class="bi bi-camera-video me-1"></i> Mark Attendance
+          </a>
+        </div>
+      </div>
+      <div class="card-body-custom p-0">
+        {% if today_records %}
+          <div class="table-responsive">
+            <table class="table table-dark table-hover mb-0" id="todayTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Roll No.</th>
+                  <th>Branch</th>
+                  <th>Subject</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for r in today_records %}
+                  <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ r.student_name }}</strong></td>
+                    <td><span class="badge bg-secondary">{{ r.roll_number }}</span></td>
+                    <td>{{ r.branch }}</td>
+                    <td>{{ r.subject }}</td>
+                    <td>{{ r.time[:8] if r.time else '—' }}</td>
+                    <td>
+                      <span class="status-badge status-{{ r.status }}">
+                        {{ r.status | capitalize }}
+                      </span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state py-5">
+            <i class="bi bi-inbox text-muted" style="font-size:3rem"></i>
+            <p class="mt-3 text-muted">No attendance recorded today yet.</p>
+            <a href="{{ url_for('attendance.attendance_page') }}" class="btn btn-primary-custom mt-2">
+              <i class="bi bi-camera-video me-2"></i>Mark Attendance
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{# ── Data island: Jinja2 renders JSON here; JS reads it safely below ── #}
+<script type="application/json" id="trendChartData">
+  { "labels": {{ trend_labels | tojson }}, "values": {{ trend_values | tojson }} }
+</script>
+
+<script>
+(function () {
+  // Read pre-rendered data from the JSON data island (no Jinja2 in JS code)
+  const chartData = JSON.parse(document.getElementById('trendChartData').textContent);
+  const labels = chartData.labels;
+  const values = chartData.values;
+
+  const ctx      = document.getElementById('trendChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(108, 99, 255, 0.6)');
+  gradient.addColorStop(1, 'rgba(108, 99, 255, 0.0)');
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels.length ? labels : ['No data'],
+      datasets: [{
+        label: 'Present Students',
+        data: values.length ? values : [0],
+        borderColor: '#6C63FF',
+        backgroundColor: gradient,
+        borderWidth: 2.5,
+        pointBackgroundColor: '#6C63FF',
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (item) => ` ${item.raw} students present`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#aaa', maxTicksLimit: 10 }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#aaa', precision: 0 },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+})();
+</script>
+{% endblock %}
