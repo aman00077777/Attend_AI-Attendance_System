@@ -3,3 +3,16 @@
 2026-06-10 14:38:44.850 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
 2026-06-10 14:38:44.851 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
 2026-06-10 14:39:14.108 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
+2026-06-10 14:39:43.676 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
+2026-06-10 14:40:17.011 | INFO     | app.routers.students:register_student:46 - Registering student: Aman Sharma (50)
+2026-06-10 14:41:02.641 | WARNING  | app.services.face_service:extract_embedding:69 - Face not detected: Face could not be detected in C:\Users\Asus\AppData\Local\Temp\tmpje9qmigv.jpg.Please confirm that the picture is a face photo or consider to set enforce_detection param to False.
+2026-06-10 14:41:39.539 | INFO     | app.routers.students:register_student:46 - Registering student: Aman Sharma (29)
+2026-06-10 14:41:41.449 | INFO     | app.services.face_service:extract_embedding:75 - Extracted embedding — dim=512
+2026-06-10 14:41:42.979 | WARNING  | app.routers.students:register_student:93 - Photo upload failed (non-fatal): {'statusCode': 404, 'error': Bucket not found, 'message': Bucket not found}
+2026-06-10 14:41:43.323 | SUCCESS  | app.routers.students:register_student:113 - Student registered: Aman Sharma id=83ab9a23-ca3c-4992-a5ff-d443af59e8a9
+2026-06-10 14:42:33.107 | INFO     | app.routers.attendance:mark_attendance:50 - Attendance mark request: subject=Machine Learning date=2026-06-10
+2026-06-10 14:42:37.135 | INFO     | app.services.face_service:extract_embedding:75 - Extracted embedding — dim=512
+2026-06-10 14:42:37.789 | INFO     | app.services.face_service:find_best_match:135 - Match found: Aman Sharma (dist=0.0512, threshold=0.6)
+2026-06-10 14:42:38.355 | SUCCESS  | app.routers.attendance:mark_attendance:124 - Attendance marked: Aman Sharma (29) subject=Machine Learning date=2026-06-10
+2026-06-10 14:45:04.345 | INFO     | app.routers.students:delete_student:156 - Deleted student id=83ab9a23-ca3c-4992-a5ff-d443af59e8a9
+2026-06-10 14:45:58.878 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
