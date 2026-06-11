@@ -7,11 +7,13 @@ Start with:
 
 import os
 import sys
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+from deepface import DeepFace
 
 from app.config import get_settings
 from app.routers import attendance, students
@@ -47,6 +49,19 @@ async def lifespan(app: FastAPI):
         settings.api_host,
         settings.api_port,
     )
+    
+    # ─── DeepFace Model Pre-loading ───
+    try:
+        logger.info("⏳ Downloading/Loading DeepFace Facenet512 weights on startup...")
+        
+        # CPU par execution safe rakhne aur event loop ko block na karne ke liye thread mein run karenge
+        await asyncio.to_thread(DeepFace.build_model, "Facenet512")
+        
+        logger.info("✅ DeepFace Facenet512 model successfully pre-loaded!")
+    except Exception as e:
+        logger.error(f"❌ Failed to pre-load DeepFace model: {e}")
+    # ──────────────────────────────────
+
     yield
     logger.info("🛑 API shutting down.")
 

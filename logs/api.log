@@ -16,3 +16,8 @@
 2026-06-10 14:42:38.355 | SUCCESS  | app.routers.attendance:mark_attendance:124 - Attendance marked: Aman Sharma (29) subject=Machine Learning date=2026-06-10
 2026-06-10 14:45:04.345 | INFO     | app.routers.students:delete_student:156 - Deleted student id=83ab9a23-ca3c-4992-a5ff-d443af59e8a9
 2026-06-10 14:45:58.878 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
+2026-06-11 22:54:33.712 | INFO     | app.main:lifespan:45 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
+2026-06-11 22:55:26.060 | INFO     | app.routers.students:register_student:46 - Registering student: Aman Sharma (50)
+2026-06-11 22:56:02.249 | WARNING  | app.services.face_service:extract_embedding:69 - Face not detected: Face could not be detected in C:\Users\Asus\AppData\Local\Temp\tmp895u6ppi.jpg.Please confirm that the picture is a face photo or consider to set enforce_detection param to False.
+2026-06-11 22:57:58.690 | INFO     | app.routers.students:register_student:46 - Registering student: Aman Sharma (50)
+2026-06-11 23:07:44.354 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
