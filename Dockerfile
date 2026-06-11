@@ -19,11 +19,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source
 COPY app/ ./app/
-COPY .env .env
+# Agar aap HF Secrets use kar rahe hain, toh is line ko hata dein
+COPY .env .env 
 
 # Create directories
 RUN mkdir -p known_faces logs
 
-EXPOSE 8000
+# Hugging Face ke liye Port 7860 expose karein
+EXPOSE 7860
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Uvicorn ko Port 7860 par run karein
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]

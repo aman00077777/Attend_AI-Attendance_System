@@ -28,3 +28,4 @@
 2026-06-11 23:25:33.471 | INFO     | app.main:lifespan:47 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
 2026-06-11 23:25:33.473 | INFO     | app.main:lifespan:55 - ⏳ Downloading/Loading DeepFace Facenet512 weights on startup...
 2026-06-11 23:25:41.218 | INFO     | app.main:lifespan:60 - ✅ DeepFace Facenet512 model successfully pre-loaded!
+2026-06-11 23:30:03.049 | INFO     | app.main:lifespan:66 - 🛑 API shutting down.

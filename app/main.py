@@ -105,13 +105,18 @@ def health_check():
     return {"status": "ok", "service": "attendance-api", "version": "1.0.0"}
 
 
+# ─── Run directly ─────────────────────────────────────────────────────────────
+
 if __name__ == "__main__":
     import uvicorn
-    port = int(os.environ.get("PORT", settings.api_port))
+    import os
+    
+    # Hugging Face default port is 7860. Fallback is settings.api_port
+    port = int(os.environ.get("PORT", 7860))
+
     uvicorn.run(
         "app.main:app",
-        host=settings.api_host,
+        host="0.0.0.0",
         port=port,
-        reload=False,  # Production/Render par reload False hona chahiye RAM bachane ke liye
-        log_level=settings.log_level.lower(),
+        reload=False,  # Keep False for production to save RAM
     )
