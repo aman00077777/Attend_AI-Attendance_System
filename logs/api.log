@@ -21,3 +21,6 @@
 2026-06-11 22:56:02.249 | WARNING  | app.services.face_service:extract_embedding:69 - Face not detected: Face could not be detected in C:\Users\Asus\AppData\Local\Temp\tmp895u6ppi.jpg.Please confirm that the picture is a face photo or consider to set enforce_detection param to False.
 2026-06-11 22:57:58.690 | INFO     | app.routers.students:register_student:46 - Registering student: Aman Sharma (50)
 2026-06-11 23:07:44.354 | INFO     | app.main:lifespan:51 - 🛑 API shutting down.
+2026-06-11 23:09:10.322 | INFO     | app.main:lifespan:47 - 🚀 Face Recognition Attendance API starting on 0.0.0.0:8000
+2026-06-11 23:09:10.374 | INFO     | app.main:lifespan:55 - ⏳ Downloading/Loading DeepFace Facenet512 weights on startup...
+2026-06-11 23:09:21.673 | INFO     | app.main:lifespan:60 - ✅ DeepFace Facenet512 model successfully pre-loaded!

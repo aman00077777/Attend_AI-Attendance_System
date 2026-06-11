@@ -8,7 +8,7 @@ from loguru import logger
 
 students_bp = Blueprint("students", __name__)
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+API_BASE = os.getenv("API_BASE_URL", "http://localhost:8001")
 
 
 @students_bp.route("/register", methods=["GET"])
@@ -40,7 +40,7 @@ def register_submit():
             f"{API_BASE}/api/students/register",
             data={"name": name, "roll_number": roll_number, "branch": branch, "year": year},
             files={"photo": (photo_file.filename, photo_file.stream, photo_file.content_type or "image/jpeg")},
-            timeout=60,  # face encoding takes time
+            timeout=120,  # face encoding takes time
         )
         data = resp.json()
         if resp.status_code == 201:
