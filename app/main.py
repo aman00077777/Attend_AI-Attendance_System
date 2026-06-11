@@ -1,5 +1,5 @@
 """
-main.py — FastAPI application entry point.
+main.py — FastAPI application entry point (Optimized for Low RAM/Render)
 
 Start with:
   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -9,6 +9,25 @@ import os
 import sys
 import asyncio
 from contextlib import asynccontextmanager
+
+# ─── TensorFlow RAM Optimization (CRITICAL FOR RENDER) ────────────────────────
+# DeepFace import karne se PEHLE yeh settings lagana zaroori hai
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # Logs kam karo taaki memory bache
+os.environ["AUTOGRAPH_VERBOSITY"] = "0"
+
+import tensorflow as tf
+# TensorFlow ko bolo ki memory dynamic allocate kare, pehle se block na kare
+import tf_keras
+
+try:
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    for gpu in gpus:
+        tf.config.experimental.set_memory_growth(gpu, True)
+    # CPU usage ke liye threads limit karein taaki Render memory crash na ho
+    tf.config.threading.set_intra_op_parallelism_threads(1)
+    tf.config.threading.set_inter_op_parallelism_threads(1)
+except Exception:
+    pass
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,8 +39,6 @@ from app.routers import attendance, students
 
 # ─── Logging ──────────────────────────────────────────────────────────────────
 settings = get_settings()
-
-# Ensure logs directory exists before loguru tries to create the file sink
 os.makedirs("logs", exist_ok=True)
 
 logger.remove()
@@ -30,13 +47,6 @@ logger.add(
     level=settings.log_level,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{line}</cyan> — <level>{message}</level>",
     colorize=True,
-)
-logger.add(
-    "logs/api.log",
-    rotation="10 MB",
-    retention="30 days",
-    level="INFO",
-    compression="zip",
 )
 
 
@@ -52,15 +62,15 @@ async def lifespan(app: FastAPI):
     
     # ─── DeepFace Model Pre-loading ───
     try:
-        logger.info("⏳ Downloading/Loading DeepFace Facenet512 weights on startup...")
+        logger.info("⏳ Loading DeepFace Facenet512 weights into memory...")
         
-        # CPU par execution safe rakhne aur event loop ko block na karne ke liye thread mein run karenge
+        # Clear keras session before loading to wipe any initial bloat
+        tf_keras.backend.clear_session()
+        
         await asyncio.to_thread(DeepFace.build_model, "Facenet512")
-        
         logger.info("✅ DeepFace Facenet512 model successfully pre-loaded!")
     except Exception as e:
         logger.error(f"❌ Failed to pre-load DeepFace model: {e}")
-    # ──────────────────────────────────
 
     yield
     logger.info("🛑 API shutting down.")
@@ -77,13 +87,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS — allow the Flask dashboard to call this API
-# NOTE: allow_origins=["*"] is incompatible with allow_credentials=True
-# (browsers reject it per the CORS spec). Use explicit origins or no credentials.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=False,  # must be False when allow_origins=["*"]
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -93,22 +100,18 @@ app.include_router(students.router)
 app.include_router(attendance.router)
 
 
-# ─── Health check ─────────────────────────────────────────────────────────────
-
 @app.get("/health", tags=["health"])
 def health_check():
     return {"status": "ok", "service": "attendance-api", "version": "1.0.0"}
 
 
-# ─── Run directly ─────────────────────────────────────────────────────────────
-
 if __name__ == "__main__":
     import uvicorn
-
+    port = int(os.environ.get("PORT", settings.api_port))
     uvicorn.run(
         "app.main:app",
         host=settings.api_host,
-        port=settings.api_port,
-        reload=True,
+        port=port,
+        reload=False,  # Production/Render par reload False hona chahiye RAM bachane ke liye
         log_level=settings.log_level.lower(),
     )
