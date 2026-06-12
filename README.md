@@ -4,9 +4,9 @@ An end-to-end automated attendance system powered by DeepFace facial recognition
 
 ## Live Demo
 
-- **Dashboard:** https://attend-ai-bv0g.onrender.com
-- **API:** https://attendai-nmvx.onrender.com
-- **API Docs:** https://attendai-nmvx.onrender.com/docs
+- **Dashboard (Frontend):** [https://attend-ai-bv0g.onrender.com](https://attend-ai-bv0g.onrender.com)
+- **API (Backend):** [https://aman20061203-attend-ai-backend.hf.space](https://aman20061203-attend-ai-backend.hf.space)
+- **API Docs:** [https://aman20061203-attend-ai-backend.hf.space/docs](https://aman20061203-attend-ai-backend.hf.space/docs)
 
 ---
 
@@ -28,13 +28,13 @@ An end-to-end automated attendance system powered by DeepFace facial recognition
 ## Architecture
 
 ```
-Browser (Dashboard)  ←→  Flask (port 5000)  ←→  FastAPI (port 8000)  ←→  Supabase
+Browser (Dashboard)  ←→  Flask (Render)  ←→  FastAPI (Hugging Face)  ←→  Supabase
 ```
 
-- **FastAPI** handles all AI/ML processing and database operations
-- **Flask** serves the UI and proxies API calls
-- **DeepFace + Facenet512** extracts 512-dimensional face embeddings
-- **Supabase** stores students, embeddings (JSONB), attendance records, and photos
+- **FastAPI (AI Backend)** handles all heavy ML processing (Face Recognition) and database operations, hosted on Hugging Face's powerful cloud.
+- **Flask (Frontend)** serves the UI and proxies API calls, hosted seamlessly on Render.
+- **DeepFace + Facenet512** extracts 512-dimensional face embeddings.
+- **Supabase** stores students, embeddings (JSONB), attendance records, and photos.
 
 ---
 
@@ -49,9 +49,7 @@ Browser (Dashboard)  ←→  Flask (port 5000)  ←→  FastAPI (port 8000)  ←
 | Storage | Supabase Storage |
 | Charts | Chart.js |
 | PDF Export | ReportLab |
-| Config | pydantic-settings, python-dotenv |
-| Logging | Loguru |
-| Deployment | Docker, Render |
+| Deployment | Hugging Face Spaces (Docker), Render |
 
 ---
 
@@ -59,40 +57,48 @@ Browser (Dashboard)  ←→  Flask (port 5000)  ←→  FastAPI (port 8000)  ←
 
 - Python 3.10+
 - [Supabase account](https://supabase.com) (free tier)
+- Hugging Face Account (for Backend hosting)
+- Render Account (for Dashboard hosting)
 - Webcam (for live attendance marking)
 
 ---
 
-## Quick Start
+## Quick Start (Local Development)
 
 ### 1. Clone and set up environment
 
 ```bash
 git clone https://github.com/aman00077777/Attend_AI-Attendance_System.git
 cd Attend_AI-Attendance_System
-cp .env.example .env
 ```
 
 ### 2. Create Supabase database
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** → paste and run `sql/schema.sql`
-3. Go to **Storage** → create a bucket named `student-photos` with **public** access
-4. Copy your keys from **Settings → API**
+- Create a new project at [supabase.com](https://supabase.com)
+- Go to **SQL Editor** → paste and run `sql/schema.sql`
+- Go to **Storage** → create a bucket named `student-photos` with public access
+- Copy your keys from **Settings → API**
 
-### 3. Configure environment
+### 3. Configure environment variables
 
-Fill in `.env`:
+Since the architecture is decoupled, environment variables are split.
+
+Create a `.env` file in the root for the **Backend**:
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
 SUPABASE_KEY=your-anon-public-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 SUPABASE_JWT_SECRET=your-jwt-secret
+FACE_MATCH_THRESHOLD=0.6
+```
+
+Create a `.env` file in the `dashboard/` folder for the **Frontend**:
+
+```env
 API_BASE_URL=http://localhost:8000
 FLASK_PORT=5000
-FLASK_SECRET_KEY=any-random-string
-FACE_MATCH_THRESHOLD=0.6
+SECRET_KEY=any-secure-random-string
 ```
 
 ### 4. Install dependencies
@@ -107,7 +113,7 @@ pip install -r requirements.txt
 python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
-API docs at: http://localhost:8000/docs
+API docs at: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### 6. Start the dashboard
 
@@ -115,81 +121,36 @@ API docs at: http://localhost:8000/docs
 python dashboard/app.py
 ```
 
-Dashboard at: http://localhost:5000
+Dashboard at: [http://localhost:5000](http://localhost:5000)
 
 ---
 
-## Deployment (Render)
+## Deployment Guide
 
-### Backend (FastAPI)
+### Phase 1: Backend (Hugging Face Spaces)
 
-1. Render → **New Web Service** → connect GitHub repo
-2. **Runtime:** Docker · **Dockerfile:** `./Dockerfile` · **Plan:** Free
-3. Add environment variables:
+The backend requires heavy processing power for DeepFace, making Hugging Face Spaces the ideal free host.
 
-| Variable | Value |
-|----------|-------|
-| `SUPABASE_URL` | Your Supabase project URL |
-| `SUPABASE_KEY` | Supabase anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Service role key |
-| `SUPABASE_JWT_SECRET` | JWT secret |
-| `FACE_MATCH_THRESHOLD` | `0.6` |
+1. Create a new Space on Hugging Face and select **Docker** as the Space SDK.
+2. Choose **Blank** template.
+3. Upload your backend files (`app/` folder, `requirements.txt`, `Dockerfile`).
+4. **Important:** Remove `COPY .env .env` from the Dockerfile if it exists.
+5. Go to **Space Settings > Variables and secrets** and add your Supabase Keys.
+6. Once the build is "Running", note your new Space URL.
 
-### Dashboard (Flask)
+### Phase 2: Dashboard (Render)
 
-1. Render → **New Web Service** → same repo
-2. **Runtime:** Docker · **Dockerfile:** `./Dockerfile.dashboard` · **Plan:** Free
-3. Add environment variables:
+The lightweight dashboard is hosted on Render.
 
-| Variable | Value |
-|----------|-------|
-| `API_BASE_URL` | Your deployed FastAPI URL |
-| `FLASK_PORT` | `5000` |
-| `FLASK_SECRET_KEY` | Any random string |
-
----
-
-## Project Structure
-
-```
-attendance-system/
-├── app/                        # FastAPI backend
-│   ├── main.py
-│   ├── config.py
-│   ├── database.py
-│   ├── models/
-│   │   └── schemas.py
-│   ├── routers/
-│   │   ├── students.py
-│   │   └── attendance.py
-│   └── services/
-│       └── face_service.py     # DeepFace embedding + matching
-│
-├── dashboard/                  # Flask dashboard
-│   ├── app.py
-│   ├── routes/
-│   │   ├── home.py
-│   │   ├── students.py
-│   │   ├── attendance.py
-│   │   └── reports.py
-│   ├── templates/
-│   │   ├── base.html
-│   │   ├── index.html
-│   │   ├── register.html
-│   │   ├── attendance.html
-│   │   ├── reports.html
-│   │   └── students_list.html
-│   └── static/
-│       ├── css/style.css
-│       └── js/main.js
-│
-├── sql/schema.sql
-├── requirements.txt
-├── .env.example
-├── Dockerfile
-├── Dockerfile.dashboard
-└── README.md
-```
+1. Update the `API_BASE_URL` in your frontend code (or local `.env`) to point to your new Hugging Face Space URL.
+2. Push your code to GitHub.
+3. Create a **New Web Service** on Render and connect your repo.
+4. Start Command: `gunicorn dashboard.app:app`
+5. Add Environment Variables in Render Dashboard:
+   - `API_BASE_URL` : Your Hugging Face Space URL
+   - `SECRET_KEY` : A random string for Flask sessions
+   - `PORT` : `10000` *(Crucial to prevent 502 Bad Gateway errors)*
+6. Deploy and access your live attendance system!
 
 ---
 
@@ -199,46 +160,33 @@ attendance-system/
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/students/register` | Register student with photo |
-| `GET` | `/api/students/` | List all students |
-| `GET` | `/api/students/{id}` | Get single student |
-| `DELETE` | `/api/students/{id}` | Delete student |
+| POST | `/api/students/register` | Register student with photo |
+| GET | `/api/students/` | List all students |
+| GET | `/api/students/{id}` | Get single student |
+| DELETE | `/api/students/{id}` | Delete student |
 
 ### Attendance
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/attendance/mark` | Mark attendance via base64 image |
-| `GET` | `/api/attendance/today` | Today's attendance records |
-| `GET` | `/api/attendance/report` | Filtered report |
-| `GET` | `/api/attendance/stats` | Attendance % per student |
-| `GET` | `/api/attendance/trend` | 30-day daily counts |
-| `GET` | `/api/attendance/export/csv` | CSV export |
+| POST | `/api/attendance/mark` | Mark attendance via base64 image |
+| GET | `/api/attendance/today` | Today's attendance records |
+| GET | `/api/attendance/report` | Filtered report |
+| GET | `/api/attendance/stats` | Attendance % per student |
+| GET | `/api/attendance/trend` | 30-day daily counts |
+| GET | `/api/attendance/export/csv` | CSV export |
 
 ---
 
 ## Face Recognition Details
 
-- **Model:** Facenet512 (512-dimensional embeddings)
-- **Detector:** OpenCV (no dlib required)
-- **Metric:** Cosine distance
-- **Threshold:** 0.6 (configurable — lower = stricter matching)
-- **Storage:** Embeddings stored as JSONB in Supabase
-
----
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SUPABASE_URL` | Yes | Supabase project URL |
-| `SUPABASE_KEY` | Yes | Supabase anon/public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Service role key |
-| `SUPABASE_JWT_SECRET` | Yes | JWT verification secret |
-| `API_BASE_URL` | Yes | FastAPI base URL |
-| `FLASK_PORT` | No | Flask port (default: 5000) |
-| `FLASK_SECRET_KEY` | No | Flask session secret |
-| `FACE_MATCH_THRESHOLD` | No | Match threshold (default: 0.6) |
+| Parameter | Value |
+|-----------|-------|
+| Model | Facenet512 (512-dimensional embeddings) |
+| Detector | OpenCV (no dlib required) |
+| Metric | Cosine distance |
+| Threshold | 0.6 (configurable) |
+| Storage | Embeddings stored as JSONB in Supabase |
 
 ---
 
@@ -246,7 +194,9 @@ attendance-system/
 
 **Aman Sharma**
 - GitHub: [aman00077777](https://github.com/aman00077777)
-- Project: [Attend_AI-Attendance_System](https://github.com/aman00077777/Attend_AI-Attendance_System)
+- Fiverr: Available for freelance AI/ML development. Let's connect!
+
+---
 
 ## License
 
