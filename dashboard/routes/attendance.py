@@ -8,7 +8,8 @@ from loguru import logger
 
 attendance_bp = Blueprint("attendance", __name__)
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+# 👇 Yahan localhost ki jagah Hugging Face ka URL daal diya hai
+API_BASE = os.getenv("API_BASE_URL", "https://aman20061203-attend-ai-backend.hf.space")
 
 
 @attendance_bp.route("/attendance", methods=["GET"])
@@ -35,7 +36,7 @@ def mark_attendance():
         resp = requests.post(
             f"{API_BASE}/api/attendance/mark",
             json={"image_b64": image_b64, "subject": subject},
-            timeout=60,
+            timeout=120,  # 👇 Timeout badha kar 120 seconds kar diya hai
         )
         result = resp.json()
         if resp.status_code == 200:

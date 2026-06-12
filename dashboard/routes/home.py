@@ -9,12 +9,14 @@ from loguru import logger
 
 home_bp = Blueprint("home", __name__)
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+# 👇 Yahan localhost ki jagah Hugging Face ka URL daal diya hai
+API_BASE = os.getenv("API_BASE_URL", "https://aman20061203-attend-ai-backend.hf.space")
 
 
 def _safe_get(url: str, default=None):
     try:
-        resp = requests.get(url, timeout=10)
+        # 👇 Timeout 10 se badha kar 30 seconds kar diya hai
+        resp = requests.get(url, timeout=30)
         resp.raise_for_status()
         return resp.json()
     except Exception as exc:

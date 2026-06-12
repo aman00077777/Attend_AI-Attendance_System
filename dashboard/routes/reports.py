@@ -21,7 +21,8 @@ from reportlab.platypus import (
 
 reports_bp = Blueprint("reports", __name__)
 
-API_BASE = os.getenv("API_BASE_URL", "http://localhost:8000")
+# 👇 Yahan localhost ki jagah naya live URL daal diya hai
+API_BASE = os.getenv("API_BASE_URL", "https://aman20061203-attend-ai-backend.hf.space")
 
 
 def _fetch_report(start_date=None, end_date=None, subject=None, student_id=None):
@@ -35,7 +36,8 @@ def _fetch_report(start_date=None, end_date=None, subject=None, student_id=None)
     if student_id:
         params["student_id"] = student_id
     try:
-        resp = requests.get(f"{API_BASE}/api/attendance/report", params=params, timeout=15)
+        # 👇 Timeout badha kar 30 kar diya hai
+        resp = requests.get(f"{API_BASE}/api/attendance/report", params=params, timeout=30)
         return resp.json() if resp.ok else {}
     except Exception as exc:
         logger.warning("Report fetch error: {}", exc)
@@ -44,7 +46,8 @@ def _fetch_report(start_date=None, end_date=None, subject=None, student_id=None)
 
 def _fetch_students():
     try:
-        resp = requests.get(f"{API_BASE}/api/students/", timeout=10)
+        # 👇 Timeout badha kar 30 kar diya hai
+        resp = requests.get(f"{API_BASE}/api/students/", timeout=30)
         return resp.json() if resp.ok else []
     except Exception:
         return []
